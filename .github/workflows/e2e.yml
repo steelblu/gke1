@@ -23,7 +23,14 @@ jobs:
         with:
           java-version: 17
           distribution: adopt
-          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Generate Gradle wrapper script (gradlew)
+        run: |
+          cd packages/spring-app
+          gradle wrapper --no-daemon
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -50,7 +57,6 @@ jobs:
       - name: Build Spring Boot jar
         run: |
           cd packages/spring-app
-          chmod +x gradlew
           ./gradlew bootJar --no-daemon
 
       - name: Start Spring Boot (background)
