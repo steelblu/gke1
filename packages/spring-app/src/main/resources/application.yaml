@@ -22,6 +22,12 @@ spring:
 fastapi:
   url: ${FASTAPI_URL:http://localhost:8000}
 
+gcp:
+  storage:
+    project-id: ${GCP_PROJECT_ID:local-dev}
+    public-bucket: shopping-mall-public
+    private-bucket: shopping-mall-private
+
 ---
 spring:
   config:
@@ -38,6 +44,27 @@ spring:
     console:
       enabled: true
       path: /h2-console
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shop_local
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-local.sql
 
 ---
 spring:

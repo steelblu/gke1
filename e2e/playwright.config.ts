@@ -10,16 +10,16 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'cd packages/react-buyer && npx vite --port 3000 --strictPort',
+      command: 'node ../../node_modules/vite/bin/vite.js --port 3000 --strictPort',
       port: 3000,
-      cwd: process.cwd(),
+      cwd: '../packages/react-buyer',
       timeout: 30_000,
       reuseExistingServer: true,
     },
     {
-      command: 'cd packages/react-supplier && npx vite --port 3001 --strictPort',
+      command: 'node ../../node_modules/vite/bin/vite.js --port 3001 --strictPort',
       port: 3001,
-      cwd: process.cwd(),
+      cwd: '../packages/react-supplier',
       timeout: 30_000,
       reuseExistingServer: true,
     },
