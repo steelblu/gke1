@@ -12,11 +12,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    defer-datasource-initialization: true
 
   sql:
     init:
       mode: always
       data-locations: classpath:data.sql
+
+fastapi:
+  url: ${FASTAPI_URL:http://localhost:8000}
 
 ---
 spring:
@@ -51,6 +55,3 @@ spring:
       minimum-idle: 2
       idle-timeout: 30000
       connection-timeout: 20000
-
-fastapi:
-  url: ${FASTAPI_URL:http://localhost:8000}
