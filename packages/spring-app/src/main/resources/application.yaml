@@ -24,7 +24,7 @@ fastapi:
 
 gcp:
   storage:
-    project-id: ${GCP_PROJECT_ID:local-dev}
+    project-id: ${GCP_PROJECT_ID:gke-shop}
     public-bucket: shopping-mall-public
     private-bucket: shopping-mall-private
 

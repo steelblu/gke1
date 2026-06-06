@@ -46,4 +46,52 @@ test.describe('Buyer Frontend', () => {
     // Draft Product should NOT be rendered (its status is "draft")
     await expect(page.getByText('Draft Product')).not.toBeVisible({ timeout: 15_000 })
   })
+
+  test('shows upload/change image button on each product card', async ({ page }) => {
+    await page.goto('http://localhost:3000')
+    await expect(page.getByText('Wireless Bluetooth Headphones')).toBeVisible({ timeout: 15_000 })
+
+    // Products may show 'Upload Image' or 'Change Image' depending on whether thumbnailUrl is set
+    const uploadButton = page.getByRole('button', { name: /Upload Image|Change Image/ })
+    await expect(uploadButton.first()).toBeVisible()
+    const count = await uploadButton.count()
+    expect(count).toBe(5)
+  })
+
+  test('upload button is disabled during upload', async ({ page }) => {
+    await page.goto('http://localhost:3000')
+    await expect(page.getByText('Wireless Bluetooth Headphones')).toBeVisible({ timeout: 15_000 })
+
+    const button = page.getByRole('button', { name: /Upload Image|Change Image/ }).first()
+    await expect(button).toBeEnabled()
+
+    const fileChooserPromise = page.waitForEvent('filechooser')
+    await button.click()
+    const fileChooser = await fileChooserPromise
+    await fileChooser.setFiles({
+      name: 'test.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('fake-image-data'),
+    })
+
+    await expect(page.getByRole('button', { name: 'Uploading...' }).first()).toBeVisible({ timeout: 5_000 })
+  })
+
+  test('shows success message after uploading image to GCS', async ({ page }) => {
+    await page.goto('http://localhost:3000')
+    await expect(page.getByText('Wireless Bluetooth Headphones')).toBeVisible({ timeout: 15_000 })
+
+    const button = page.getByRole('button', { name: /Upload Image|Change Image/ }).first()
+    const fileChooserPromise = page.waitForEvent('filechooser')
+    await button.click()
+    const fileChooser = await fileChooserPromise
+    await fileChooser.setFiles({
+      name: 'test.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('fake-image-data'),
+    })
+
+    // GCS is connected — upload should succeed
+    await expect(page.getByText('Image uploaded successfully')).toBeVisible({ timeout: 15_000 })
+  })
 })

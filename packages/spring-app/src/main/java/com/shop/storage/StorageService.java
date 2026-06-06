@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -57,7 +56,7 @@ public class StorageService {
                 blobInfo,
                 15, TimeUnit.MINUTES,
                 Storage.SignUrlOption.httpMethod(HttpMethod.PUT),
-                Storage.SignUrlOption.withExtHeaders(Map.of("Content-Type", contentType))
+                Storage.SignUrlOption.withV4Signature()
         );
     }
 
@@ -75,7 +74,8 @@ public class StorageService {
         return storage.signUrl(
                 blobInfo,
                 5, TimeUnit.MINUTES,
-                Storage.SignUrlOption.httpMethod(HttpMethod.GET)
+                Storage.SignUrlOption.httpMethod(HttpMethod.GET),
+                Storage.SignUrlOption.withV4Signature()
         );
     }
 
