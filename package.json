@@ -13,6 +13,11 @@
     "build:buyer": "yarn workspace @shop/buyer build",
     "build:supplier": "yarn workspace @shop/supplier build",
     "dev:buyer": "yarn workspace @shop/buyer dev",
-    "dev:supplier": "yarn workspace @shop/supplier dev"
+    "dev:supplier": "yarn workspace @shop/supplier dev",
+    "e2e": "playwright test --config e2e/playwright.config.ts",
+    "e2e:headed": "playwright test --config e2e/playwright.config.ts --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
   }
 }

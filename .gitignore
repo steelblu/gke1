@@ -22,3 +22,7 @@ __pycache__/
 # Gradle
 .gradle/
 build/
+bin/
+
+# Playwright
+test-results/
