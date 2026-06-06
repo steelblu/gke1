@@ -376,6 +376,138 @@ Git Push (monorepo)
 
 ---
 
+## 로컬 개발 환경 (E2E 테스트)
+
+### 사전 요구사항
+
+| 도구 | 버전 | 비고 |
+|---|---|---|
+| Java | 17+ | Spring Boot 3.3 |
+| Gradle | 8.10+ | wrapper가 자동 다운로드 |
+| Python | 3.10+ | FastAPI |
+| Node | 18+ | React (Vite) |
+| Yarn | 1.x | monorepo 빌드 |
+
+### 설치
+
+```bash
+# Monorepo dependencies (React)
+yarn install
+
+# FastAPI
+python -m pip install fastapi uvicorn
+```
+
+### 실행 (4개 터미널)
+
+#### 터미널 1 — FastAPI (port 8000)
+
+```bash
+cd packages/fastapi-ai
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+#### 터미널 2 — Spring Boot (port 8080, H2 in-memory)
+
+```bash
+cd packages/spring-app
+.\gradlew.bat bootRun --args=--spring.profiles.active=dev
+```
+
+- `dev` profile = **H2 in-memory** (CloudSQL 불필요)
+- seed data (`data.sql`) 6개 상품 + 3개 주문 자동 로딩
+- H2 Console: http://localhost:8080/h2-console (jdbc:h2:mem:shop)
+
+#### 터미널 3 — Buyer Frontend (port 3000)
+
+```bash
+yarn workspace @shop/buyer dev
+```
+
+#### 터미널 4 — Supplier Frontend (port 3001)
+
+```bash
+yarn workspace @shop/supplier dev
+```
+
+### 브라우저 확인
+
+| URL | 내용 | E2E 검증 포인트 |
+|---|---|---|
+| http://localhost:3000 | Buyer 상품 목록 | React → Vite proxy → Spring → H2 |
+| http://localhost:3001 | Supplier 대시보드+주문 | React → Vite proxy → Spring |
+| http://localhost:8080/health | Spring 상태 | 서비스 기동 확인 |
+| http://localhost:8000/health | FastAPI 상태 | AI 서비스 기동 |
+
+### API curl 테스트
+
+```bash
+# 1. Spring health
+curl -s http://localhost:8080/health
+
+# 2. Buyer: 상품 목록 (status=active)
+curl -s http://localhost:8080/buyer/products
+
+# 3. Buyer: 카테고리 필터
+curl -s "http://localhost:8080/buyer/products?category=Electronics"
+
+# 4. Supplier: 대시보드 통계
+curl -s http://localhost:8080/supplier/dashboard
+
+# 5. Supplier: 주문 목록
+curl -s http://localhost:8080/supplier/orders
+
+# 6. Spring → FastAPI 연동 (AI health)
+curl -s http://localhost:8080/ai/health
+
+# 7. Spring → FastAPI 연동 (추천)
+curl -s http://localhost:8080/buyer/recommend
+
+# 8. FastAPI 직접
+curl -s http://localhost:8000/health
+curl -s http://localhost:8000/recommend?user_id=test
+```
+
+### E2E 체크리스트
+
+```
+[ 1] Buyer 페이지에 상품 5개 카드 렌더링
+[ 2] 카테고리 필터 (Electronics → 3개)
+[ 3] Supplier 페이지 대시보드 숫자 (Total Products: 6, Active: 5)
+[ 4] Supplier 주문 테이블 3건 (completed/shipped/pending)
+[ 5] Spring → FastAPI /ai/health 응답 "UP"
+[ 6] FastAPI /recommend 3개 추천 결과
+[ 7] H2 Console 접속 (localhost:8080/h2-console)
+```
+
+### 프록시 구조
+
+```
+개발 환경 (Vite proxy):
+  Browser (:3000) → /api/buyer/products
+    └─ Vite rewrite: /api/ 제거 → /buyer/products
+        └─ Spring (:8080)
+
+GKE 운영 환경 (Nginx proxy):
+  Browser (buyer.gke1.com) → /api/buyer/products
+    └─ Nginx proxy_pass (trailing slash): /api/ 제거 → /buyer/products
+        └─ Spring (spring-app-svc:8080)
+```
+
+> 두 환경 모두 `/api/` prefix를 제거하고 Spring에 전달 — React 코드가 `fetch('/api/...')`로 통일됨.
+
+### 트러블슈팅
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| `Table "PRODUCTS" not found` | data.sql이 Hibernate DDL보다 먼저 실행 | `spring.jpa.defer-datasource-initialization: true` |
+| `Could not resolve placeholder 'fastapi.url'` | `fastapi.url`이 gke profile에만 있음 | default section으로 이동 |
+| `HTTP 404: /api/buyer/products` | Vite proxy가 `/api` prefix 유지 | `rewrite: (path) => path.replace(/^\/api/, '')` |
+| `DuplicateKeyException` | YAML에 `jpa:` 키 중복 선언 | 하나의 `jpa:` 블록으로 병합 |
+| `Unsupported class file major version 65` | Java 21 코드를 Java 17로 실행 | `build.gradle.kts` toolchain을 17로 변경 |
+
+---
+
 ## 보안
 
 - **Network Policy**: FastAPI → Cloud SQL은 특정 테이블만 SELECT 가능
