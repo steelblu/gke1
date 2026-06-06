@@ -52,6 +52,7 @@ jobs:
       - name: Build Spring Boot jar
         run: |
           cd packages/spring-app
+          chmod +x gradlew
           ./gradlew bootJar --no-daemon
 
       - name: Start Spring Boot (background)
