@@ -140,3 +140,43 @@ packages/
 - **공유 컴포넌트** — 완전히 동일한 UI만 `shared-ui`, UX가 다르면 각 패키지에서 별도 구현
 
 > 상세 문서: [gke.md](gke.md)
+
+---
+
+## GKE 배포 (k8s)
+
+`k8s/` 디렉토리에 모든 매니페스트가 있습니다.
+
+```bash
+# 사전 준비
+kubectl create secret generic cloud-sql-credentials \
+  --namespace shop \
+  --from-literal=username=DB_USER \
+  --from-literal=password=DB_PASS \
+  --from-literal=username_readonly=READONLY_USER \
+  --from-literal=password_readonly=READONLY_PASS
+
+kubectl create secret generic jwt-secret \
+  --namespace shop \
+  --from-literal=secret=YOUR_JWT_SECRET
+
+# 배포
+kubectl apply -k k8s/
+
+# 확인
+kubectl get all -n shop
+kubectl get ingress -n shop
+kubectl get managedcertificates -n shop
+```
+
+> **주의**: 배포 전에 `*.yaml` 파일에서 `PROJECT_ID`, `REGION`, `INSTANCE_NAME`을 실제 GCP 값으로 치환하세요.
+
+### 리소스
+
+| 서비스 | CPU (request/limit) | Memory (request/limit) | Replicas |
+|---|---|---|---|
+| spring-app | 2 / 4 | 4Gi / 8Gi | 2~6 (HPA) |
+| fastapi-ai | 1 / 2 | 2Gi / 4Gi | 1~4 (HPA) |
+| react-buyer | 100m / 500m | 128Mi / 256Mi | 2~10 (HPA) |
+| react-supplier | 100m / 500m | 128Mi / 256Mi | 2~5 (HPA) |
+| cloud-sql-proxy (sidecar) | 100m / 500m | 256Mi / 512Mi | - |

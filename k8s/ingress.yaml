@@ -1,0 +1,69 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shop-ingress
+  namespace: shop
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "shop-static-ip"
+    networking.gke.io/managed-certificates: "shop-cert"
+    networking.gke.io/v1beta1.FrontendConfig: "shop-frontend-config"
+spec:
+  rules:
+  - host: buyer.gke1.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: react-buyer-svc
+            port:
+              number: 80
+  - host: supplier.gke1.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: react-supplier-svc
+            port:
+              number: 80
+  - host: api.gke1.com
+    http:
+      paths:
+      - path: /buyer/api/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: spring-app-svc
+            port:
+              number: 8080
+      - path: /supplier/api/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: spring-app-svc
+            port:
+              number: 8080
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: shop-cert
+  namespace: shop
+spec:
+  domains:
+    - buyer.gke1.com
+    - supplier.gke1.com
+    - api.gke1.com
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: shop-frontend-config
+  namespace: shop
+spec:
+  redirectToHttps:
+    enabled: true

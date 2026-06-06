@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-config
+  namespace: shop
+data:
+  ENV: "production"
+  SPRING_API_URL: "http://spring-app-svc:8080"
+  DB_HOST: "127.0.0.1"
+  DB_PORT: "5432"
+  DB_NAME: "shop"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-ai
+  namespace: shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi-ai
+  template:
+    metadata:
+      labels:
+        app: fastapi-ai
+        role: ai
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: fastapi-ai
+        image: gcr.io/PROJECT_ID/fastapi-ai:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: fastapi-config
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: cloud-sql-credentials
+              key: username_readonly
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cloud-sql-credentials
+              key: password_readonly
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-ai-svc
+  namespace: shop
+spec:
+  type: ClusterIP
+  selector:
+    app: fastapi-ai
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http

@@ -1,0 +1,100 @@
+---
+# Buyer Frontend → Spring API 만 허용
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-buyer-to-spring
+  namespace: shop
+spec:
+  podSelector:
+    matchLabels:
+      app: spring-app
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: react-buyer
+    ports:
+    - port: 8080
+---
+# Supplier Frontend → Spring API 만 허용
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-supplier-to-spring
+  namespace: shop
+spec:
+  podSelector:
+    matchLabels:
+      app: spring-app
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: react-supplier
+    ports:
+    - port: 8080
+---
+# Spring → FastAPI
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-spring-to-fastapi
+  namespace: shop
+spec:
+  podSelector:
+    matchLabels:
+      app: fastapi-ai
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: spring-app
+    ports:
+    - port: 8000
+---
+# Ingress → Buyer Frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-buyer
+  namespace: shop
+spec:
+  podSelector:
+    matchLabels:
+      app: react-buyer
+  ingress:
+  - from:
+    - namespaceSelector: {}
+---
+# Ingress → Supplier Frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-supplier
+  namespace: shop
+spec:
+  podSelector:
+    matchLabels:
+      app: react-supplier
+  ingress:
+  - from:
+    - namespaceSelector: {}
+---
+# FastAPI는 외부에서 직접 접근 차단
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-external-to-fastapi
+  namespace: shop
+spec:
+  podSelector:
+    matchLabels:
+      app: fastapi-ai
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: spring-app

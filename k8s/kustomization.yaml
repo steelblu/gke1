@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: shop
+
+resources:
+- namespace.yaml
+- react-buyer.yaml
+- react-supplier.yaml
+- spring-app.yaml
+- fastapi-ai.yaml
+- ingress.yaml
+- hpa.yaml
+- network-policy.yaml
