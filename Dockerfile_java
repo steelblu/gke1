@@ -1,0 +1,18 @@
+# 정은국 vue sample
+
+FROM node:22-alpine
+
+# 작업 공간 생성
+WORKDIR /app
+
+# 압축 파일 복사
+COPY platform-webapp-vue-release.tar /app/
+
+# Extract the tar file
+RUN tar -xvf platform-webapp-vue-release.tar
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# ENV PORT=443 # node 실행 포트 변경 시 사용
+CMD ["node", "/app/.output/server/index.mjs"]

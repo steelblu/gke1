@@ -1,0 +1,20 @@
+# 정은국 spring sample 
+
+FROM amazoncorretto:21
+
+ARG JAR_FILE=API-2.5.0.jar
+
+COPY build/libs/${JAR_FILE} /api.jar
+
+EXPOSE 8091
+
+CMD ["java", \
+    "-Duser.country=KR", \
+    "-Duser.language=ko", \
+    "-Dspring.profiles.active=prd", \
+    "-Dspring.config.location=classpath:/config/platform/", \
+    "-Djava.net.preferIPv4Stack=true", \
+    "-Djdk.tls.client.protocols=TLSv1.2", \
+    "-Dmail.smtp.ssl.checkserveridentity=false", \
+    "-Dmail.smtp.ssl.trust=*", \
+    "-jar", "/api.jar"]
