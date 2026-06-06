@@ -1,0 +1,18 @@
+{
+  "name": "shop-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/shared-ui",
+    "packages/shared-hooks",
+    "packages/shared-types",
+    "packages/react-buyer",
+    "packages/react-supplier"
+  ],
+  "scripts": {
+    "build:buyer": "yarn workspace @shop/buyer build",
+    "build:supplier": "yarn workspace @shop/supplier build",
+    "dev:buyer": "yarn workspace @shop/buyer dev",
+    "dev:supplier": "yarn workspace @shop/supplier dev"
+  }
+}

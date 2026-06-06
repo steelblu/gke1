@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "fastapi-ai"
+version = "0.1.0"
+description = "AI service for GKE Shop"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115"
+uvicorn = {extras = ["standard"], version = "^0.32"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
