@@ -1,0 +1,109 @@
+name: E2E
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  SPRING_APP_PORT: 8080
+  FASTAPI_PORT: 8000
+
+jobs:
+  e2e:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: adopt
+          cache: gradle
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Install Python dependencies
+        working-directory: packages/fastapi-ai
+        run: |
+          pip install -r requirements.txt
+          # verify FastAPI imports cleanly
+          python -c "import fastapi; import uvicorn; print('FastAPI OK')"
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build Spring Boot jar
+        run: |
+          cd packages/spring-app
+          chmod +x gradlew
+          ./gradlew bootJar --no-daemon
+
+      - name: Start Spring Boot (background)
+        run: |
+          java -jar packages/spring-app/build/libs/*.jar --spring.profiles.active=dev &
+          echo "SPRING_PID=$!" >> $GITHUB_ENV
+
+      - name: Start FastAPI (background)
+        run: |
+          cd packages/fastapi-ai
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          echo "FASTAPI_PID=$!" >> $GITHUB_ENV
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for Spring Boot on port $SPRING_APP_PORT..."
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:$SPRING_APP_PORT/health && echo " Spring ready" && break
+            if [ $i -eq 60 ]; then echo " Spring timeout"; exit 1; fi
+            sleep 2
+          done
+          echo "Waiting for FastAPI on port $FASTAPI_PORT..."
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:$FASTAPI_PORT/health && echo " FastAPI ready" && break
+            if [ $i -eq 30 ]; then echo " FastAPI timeout"; exit 1; fi
+            sleep 2
+          done
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Run E2E tests
+        run: |
+          npx playwright test --config e2e/playwright.config.ts --reporter=list
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+
+      - name: Stop services
+        if: always()
+        run: |
+          kill $SPRING_PID 2>/dev/null || true
+          kill $FASTAPI_PID 2>/dev/null || true
