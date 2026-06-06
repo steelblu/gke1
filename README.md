@@ -120,15 +120,43 @@ graph LR
 
 ## 시작하기
 
+### Monorepo 구조
+
 ```bash
-# Monorepo 구조
 packages/
-├── shared-ui/       # 공통 UI 컴포넌트
-├── shared-hooks/    # 공통 React Hooks
-├── shared-types/    # TypeScript interfaces
-├── buyer/           # Buyer Frontend
-└── supplier/        # Supplier Frontend
+├── shared-ui/           # 공통 UI 컴포넌트
+├── shared-hooks/        # 공통 React Hooks
+├── shared-types/        # TypeScript interfaces
+├── react-buyer/         # Buyer Frontend (React)
+│   ├── Dockerfile       #   Node build → Nginx
+│   └── nginx.conf
+├── react-supplier/      # Supplier Frontend (React)
+│   ├── Dockerfile       #   Node build → Nginx
+│   └── nginx.conf
+├── spring-app/          # Business API (Spring Boot + Gradle)
+│   └── Dockerfile       #   Gradle build → JRE (ZGC)
+└── fastapi-ai/          # AI API (FastAPI + Poetry)
+    └── Dockerfile       #   Pip install → uvicorn
 ```
+
+### Docker Build
+
+```bash
+# Buyer Frontend
+docker build -f packages/react-buyer/Dockerfile -t gcr.io/PROJECT_ID/react-buyer .
+
+# Supplier Frontend
+docker build -f packages/react-supplier/Dockerfile -t gcr.io/PROJECT_ID/react-supplier .
+
+# Spring App
+docker build -f packages/spring-app/Dockerfile -t gcr.io/PROJECT_ID/spring-app .
+
+# FastAPI
+docker build -f packages/fastapi-ai/Dockerfile -t gcr.io/PROJECT_ID/fastapi-ai .
+```
+
+> **참고**: React Dockerfile은 monorepo root context에서 빌드해야 shared 패키지를 참조할 수 있습니다.
+> `docker build -f packages/react-buyer/Dockerfile -t ... .` (`.` = repo root)
 
 ---
 
