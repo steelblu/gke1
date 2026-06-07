@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { useAuth } from './context/AuthContext'
+import LoginPage from './components/LoginPage'
 
 interface Product {
   id: string
@@ -16,6 +18,7 @@ interface UploadState {
 }
 
 function App() {
+  const auth = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -92,9 +95,31 @@ function App() {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px' }}>
-      <header style={{ borderBottom: '2px solid #333', marginBottom: 24 }}>
-        <h1>GKE Shop</h1>
-        <p style={{ color: '#666' }}>Buyer Frontend — react-buyer</p>
+      <header style={{ borderBottom: '2px solid #333', marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ margin: '0 0 4px' }}>GKE Shop</h1>
+          <p style={{ color: '#666', margin: 0, fontSize: 13 }}>Buyer Frontend — react-buyer</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {auth.username ? (
+            <>
+              <span style={{ color: '#666', fontSize: 13 }}>{auth.username}</span>
+              <button
+                onClick={auth.logout}
+                style={{ background: 'none', border: '1px solid #ddd', borderRadius: 4, padding: '4px 12px', fontSize: 12, color: '#666', cursor: 'pointer' }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={auth.openLogin}
+              style={{ background: '#333', border: 'none', borderRadius: 4, padding: '6px 16px', fontSize: 12, color: '#fff', cursor: 'pointer' }}
+            >
+              Login
+            </button>
+          )}
+        </div>
       </header>
 
       <h2>Products</h2>
@@ -180,6 +205,8 @@ function App() {
         <p>Host: {window.location.hostname}</p>
         <p>E2E Test — Buyer Frontend → Spring API → Cloud SQL</p>
       </footer>
+
+      {auth.showLogin && <LoginPage />}
     </div>
   )
 }

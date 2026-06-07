@@ -83,6 +83,6 @@ test.describe('Supplier Frontend', () => {
     await page.getByLabel('Price (원)').fill('35000')
     await page.getByLabel('Stock').fill('20')
     await page.getByRole('button', { name: 'Save' }).click()
-    await expect(page.getByText('Browser Test Product')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('cell', { name: 'Browser Test Product' }).first()).toBeVisible({ timeout: 10_000 })
   })
 })
