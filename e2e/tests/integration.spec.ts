@@ -54,7 +54,9 @@ test.describe('API Integration', () => {
   })
 
   test('Recommendation endpoint returns recommendations', async ({ request }) => {
-    const resp = await request.get('http://localhost:3000/api/buyer/recommend?userId=e2e-test')
+    const resp = await request.get('http://localhost:3000/api/buyer/recommend?userId=e2e-test', {
+      headers: { Authorization: `Bearer ${buyerToken}` }
+    })
     expect(resp.ok()).toBeTruthy()
     const body = await resp.json()
     expect(body).toHaveProperty('user_id', 'e2e-test')
