@@ -19,6 +19,11 @@ interface UploadState {
 
 function App() {
   const auth = useAuth()
+
+  if (!auth.token) {
+    return <LoginPage variant="page" />
+  }
+
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -26,9 +31,13 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pendingProductRef = useRef<string | null>(null)
 
+  const authHeaders: Record<string, string> = auth.token
+    ? { 'Authorization': `Bearer ${auth.token}` }
+    : {}
+
   const fetchProducts = () => {
     setLoading(true)
-    fetch('/api/buyer/products')
+    fetch('/api/buyer/products', { headers: { ...authHeaders } })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()
@@ -43,7 +52,7 @@ function App() {
       })
   }
 
-  useEffect(() => { fetchProducts() }, [])
+  useEffect(() => { fetchProducts() }, [auth.token])
 
   const triggerUpload = (productId: string) => {
     pendingProductRef.current = productId
@@ -61,7 +70,7 @@ function App() {
       const contentType = file.type || 'image/jpeg'
       const urlResp = await fetch(`/api/storage/products/${productId}/upload-url`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ contentType }),
       })
 
@@ -101,24 +110,13 @@ function App() {
           <p style={{ color: '#666', margin: 0, fontSize: 13 }}>Buyer Frontend — react-buyer</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {auth.username ? (
-            <>
-              <span style={{ color: '#666', fontSize: 13 }}>{auth.username}</span>
-              <button
-                onClick={auth.logout}
-                style={{ background: 'none', border: '1px solid #ddd', borderRadius: 4, padding: '4px 12px', fontSize: 12, color: '#666', cursor: 'pointer' }}
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={auth.openLogin}
-              style={{ background: '#333', border: 'none', borderRadius: 4, padding: '6px 16px', fontSize: 12, color: '#fff', cursor: 'pointer' }}
-            >
-              Login
-            </button>
-          )}
+          <span style={{ color: '#666', fontSize: 13 }}>{auth.username}</span>
+          <button
+            onClick={auth.logout}
+            style={{ background: 'none', border: '1px solid #ddd', borderRadius: 4, padding: '4px 12px', fontSize: 12, color: '#666', cursor: 'pointer' }}
+          >
+            Logout
+          </button>
         </div>
       </header>
 
@@ -205,8 +203,6 @@ function App() {
         <p>Host: {window.location.hostname}</p>
         <p>E2E Test — Buyer Frontend → Spring API → Cloud SQL</p>
       </footer>
-
-      {auth.showLogin && <LoginPage />}
     </div>
   )
 }

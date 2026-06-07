@@ -1,6 +1,24 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Buyer Frontend', () => {
+  let buyerToken: string
+
+  test.beforeAll(async ({ request }) => {
+    const resp = await request.post('http://localhost:3000/auth/login', {
+      data: { username: 'buyer1', password: 'password123' }
+    })
+    const body = await resp.json()
+    buyerToken = body.token
+  })
+
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript((token: string) => {
+      localStorage.setItem('buyer_token', token)
+      localStorage.setItem('buyer_role', 'BUYER')
+      localStorage.setItem('buyer_username', 'buyer1')
+    }, buyerToken)
+  })
+
   test('renders page title and header', async ({ page }) => {
     await page.goto('http://localhost:3000')
     await expect(page.getByRole('heading', { name: 'GKE Shop' })).toBeVisible()

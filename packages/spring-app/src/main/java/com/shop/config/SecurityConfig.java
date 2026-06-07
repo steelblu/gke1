@@ -31,7 +31,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health/**", "/health").permitAll()
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/buyer/**").permitAll()
+                .requestMatchers("/buyer/**").hasRole("BUYER")
                 .requestMatchers("/storage/**").permitAll()
                 .requestMatchers("/supplier/**").hasRole("SUPPLIER")
                 .anyRequest().permitAll()

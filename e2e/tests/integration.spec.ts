@@ -2,13 +2,20 @@ import { test, expect } from '@playwright/test'
 
 test.describe('API Integration', () => {
   let supplierToken: string
+  let buyerToken: string
 
   test.beforeAll(async ({ request }) => {
-    const resp = await request.post('http://localhost:3001/auth/login', {
+    const supResp = await request.post('http://localhost:3001/auth/login', {
       data: { username: 'techsupplier', password: 'password123' }
     })
-    const body = await resp.json()
-    supplierToken = body.token
+    const supBody = await supResp.json()
+    supplierToken = supBody.token
+
+    const buyResp = await request.post('http://localhost:3000/auth/login', {
+      data: { username: 'buyer1', password: 'password123' }
+    })
+    const buyBody = await buyResp.json()
+    buyerToken = buyBody.token
   })
 
   test('Spring Health endpoint returns UP', async ({ request }) => {
@@ -27,7 +34,9 @@ test.describe('API Integration', () => {
   })
 
   test('Spring buyer products endpoint returns 5 products', async ({ request }) => {
-    const resp = await request.get('http://localhost:3000/api/buyer/products')
+    const resp = await request.get('http://localhost:3000/api/buyer/products', {
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
     expect(resp.ok()).toBeTruthy()
     const body = await resp.json()
     expect(Array.isArray(body)).toBeTruthy()
@@ -35,7 +44,9 @@ test.describe('API Integration', () => {
   })
 
   test('Spring buyer products supports category filter', async ({ request }) => {
-    const resp = await request.get('http://localhost:3000/api/buyer/products?category=Furniture')
+    const resp = await request.get('http://localhost:3000/api/buyer/products?category=Furniture', {
+      headers: { 'Authorization': `Bearer ${buyerToken}` }
+    })
     expect(resp.ok()).toBeTruthy()
     const body = await resp.json()
     expect(body.length).toBe(1)
