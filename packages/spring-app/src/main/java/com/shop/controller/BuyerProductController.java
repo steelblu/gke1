@@ -2,6 +2,7 @@ package com.shop.controller;
 
 import com.shop.dto.ProductSummary;
 import com.shop.repository.ProductRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class BuyerProductController {
     }
 
     @GetMapping("/products")
+    @Cacheable(value = "products", key = "#category ?: 'all'")
     public List<ProductSummary> getProducts(
             @RequestParam(defaultValue = "active") String status,
             @RequestParam(required = false) String category) {
@@ -36,6 +38,7 @@ public class BuyerProductController {
     }
 
     @GetMapping("/products/{id}")
+    @Cacheable(value = "product", key = "#id")
     public ProductSummary getProduct(@PathVariable UUID id) {
         return productRepository.findById(id)
                 .map(ProductSummary::from)

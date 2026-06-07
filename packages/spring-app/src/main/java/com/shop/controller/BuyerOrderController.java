@@ -5,6 +5,7 @@ import com.shop.model.CartItem;
 import com.shop.model.Order;
 import com.shop.repository.CartItemRepository;
 import com.shop.repository.OrderRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +34,7 @@ public class BuyerOrderController {
 
     @PostMapping
     @Transactional
+    @CacheEvict(value = "dashboard", allEntries = true)
     public ResponseEntity<List<OrderResponse>> checkout() {
         UUID buyerId = currentUserId();
         List<CartItem> cartItems = cartItemRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId);

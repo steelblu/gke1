@@ -4,6 +4,8 @@ import com.shop.dto.DashboardStats;
 import com.shop.model.Order;
 import com.shop.repository.OrderRepository;
 import com.shop.repository.ProductRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +24,7 @@ public class SupplierDashboardController {
     }
 
     @GetMapping("/dashboard")
+    @Cacheable("dashboard")
     public DashboardStats getDashboard() {
         long totalProducts = productRepository.count();
         long activeProducts = productRepository.countByStatus("active");
@@ -39,6 +42,7 @@ public class SupplierDashboardController {
     }
 
     @PostMapping("/orders/{id}/status")
+    @CacheEvict(value = {"dashboard", "orders"}, allEntries = true)
     public Order updateOrderStatus(@PathVariable UUID id, @RequestParam String status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + id));

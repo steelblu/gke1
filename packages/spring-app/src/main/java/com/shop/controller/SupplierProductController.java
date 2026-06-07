@@ -6,6 +6,7 @@ import com.shop.model.Product;
 import com.shop.model.User;
 import com.shop.repository.ProductRepository;
 import com.shop.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,6 +56,7 @@ public class SupplierProductController {
     }
 
     @PostMapping
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest req) {
         User user = currentUser();
 
@@ -73,6 +75,7 @@ public class SupplierProductController {
     }
 
     @PutMapping("/{id}")
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ProductResponse updateProduct(@PathVariable UUID id, @RequestBody ProductRequest req) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + id));
@@ -92,6 +95,7 @@ public class SupplierProductController {
     }
 
     @DeleteMapping("/{id}")
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + id));
