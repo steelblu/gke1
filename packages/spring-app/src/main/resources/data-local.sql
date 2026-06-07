@@ -10,6 +10,7 @@ ON CONFLICT (id) DO UPDATE SET
     category = EXCLUDED.category,
     supplier_id = EXCLUDED.supplier_id,
     supplier_name = EXCLUDED.supplier_name,
+    thumbnail_url = EXCLUDED.thumbnail_url,
     updated_at = NOW();
 
 INSERT INTO products (id, name, description, price, stock, status, category, supplier_id, supplier_name, thumbnail_url, created_at, updated_at) VALUES
@@ -23,6 +24,7 @@ ON CONFLICT (id) DO UPDATE SET
     category = EXCLUDED.category,
     supplier_id = EXCLUDED.supplier_id,
     supplier_name = EXCLUDED.supplier_name,
+    thumbnail_url = EXCLUDED.thumbnail_url,
     updated_at = NOW();
 
 INSERT INTO products (id, name, description, price, stock, status, category, supplier_id, supplier_name, thumbnail_url, created_at, updated_at) VALUES
@@ -36,6 +38,7 @@ ON CONFLICT (id) DO UPDATE SET
     category = EXCLUDED.category,
     supplier_id = EXCLUDED.supplier_id,
     supplier_name = EXCLUDED.supplier_name,
+    thumbnail_url = EXCLUDED.thumbnail_url,
     updated_at = NOW();
 
 INSERT INTO products (id, name, description, price, stock, status, category, supplier_id, supplier_name, thumbnail_url, created_at, updated_at) VALUES
@@ -49,6 +52,7 @@ ON CONFLICT (id) DO UPDATE SET
     category = EXCLUDED.category,
     supplier_id = EXCLUDED.supplier_id,
     supplier_name = EXCLUDED.supplier_name,
+    thumbnail_url = EXCLUDED.thumbnail_url,
     updated_at = NOW();
 
 INSERT INTO products (id, name, description, price, stock, status, category, supplier_id, supplier_name, thumbnail_url, created_at, updated_at) VALUES
@@ -62,6 +66,7 @@ ON CONFLICT (id) DO UPDATE SET
     category = EXCLUDED.category,
     supplier_id = EXCLUDED.supplier_id,
     supplier_name = EXCLUDED.supplier_name,
+    thumbnail_url = EXCLUDED.thumbnail_url,
     updated_at = NOW();
 
 INSERT INTO products (id, name, description, price, stock, status, category, supplier_id, supplier_name, thumbnail_url, created_at, updated_at) VALUES
@@ -75,7 +80,41 @@ ON CONFLICT (id) DO UPDATE SET
     category = EXCLUDED.category,
     supplier_id = EXCLUDED.supplier_id,
     supplier_name = EXCLUDED.supplier_name,
+    thumbnail_url = EXCLUDED.thumbnail_url,
     updated_at = NOW();
+
+-- Seed users
+INSERT INTO users (id, username, password, role, email, created_at) VALUES
+('e1f2a3b4-0001-4000-8000-000000000001', 'techsupplier', '$2b$10$F0tjZzYikIMKoH0OFExQE.j/t//aWO8QdC5p.rToJQawPmPcz546q', 'SUPPLIER', 'admin@techsupplier.com', NOW())
+ON CONFLICT (id) DO UPDATE SET
+    username = EXCLUDED.username,
+    password = EXCLUDED.password,
+    role = EXCLUDED.role,
+    email = EXCLUDED.email;
+
+INSERT INTO users (id, username, password, role, email, created_at) VALUES
+('e1f2a3b4-0002-4000-8000-000000000001', 'keycraft', '$2b$10$F0tjZzYikIMKoH0OFExQE.j/t//aWO8QdC5p.rToJQawPmPcz546q', 'SUPPLIER', 'admin@keycraft.com', NOW())
+ON CONFLICT (id) DO UPDATE SET
+    username = EXCLUDED.username,
+    password = EXCLUDED.password,
+    role = EXCLUDED.role,
+    email = EXCLUDED.email;
+
+INSERT INTO users (id, username, password, role, email, created_at) VALUES
+('f1a2b3c4-0001-4000-8000-000000000001', 'buyer1', '$2b$10$F0tjZzYikIMKoH0OFExQE.j/t//aWO8QdC5p.rToJQawPmPcz546q', 'BUYER', 'buyer1@test.com', NOW())
+ON CONFLICT (id) DO UPDATE SET
+    username = EXCLUDED.username,
+    password = EXCLUDED.password,
+    role = EXCLUDED.role,
+    email = EXCLUDED.email;
+
+INSERT INTO users (id, username, password, role, email, created_at) VALUES
+('f1a2b3c4-0002-4000-8000-000000000001', 'buyer2', '$2b$10$F0tjZzYikIMKoH0OFExQE.j/t//aWO8QdC5p.rToJQawPmPcz546q', 'BUYER', 'buyer2@test.com', NOW())
+ON CONFLICT (id) DO UPDATE SET
+    username = EXCLUDED.username,
+    password = EXCLUDED.password,
+    role = EXCLUDED.role,
+    email = EXCLUDED.email;
 
 -- Seed orders
 INSERT INTO orders (id, buyer_id, product_id, product_name, supplier_id, quantity, unit_price, total_amount, status, created_at) VALUES

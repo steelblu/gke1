@@ -26,3 +26,10 @@ bin/
 
 # Playwright
 test-results/
+
+# OpenCode / AI assistant artifacts
+.anchored-summary.md
+.omo/
+
+# TypeScript
+tsconfig.tsbuildinfo

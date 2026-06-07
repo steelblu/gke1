@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from './context/AuthContext'
+import { apiFetch } from './api'
+import LoginPage from './components/LoginPage'
+import ProductList from './components/ProductList'
 
 interface DashboardStats {
   totalProducts: number
@@ -7,17 +11,13 @@ interface DashboardStats {
   activeProducts: number
 }
 
-function App() {
+function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/supplier/dashboard')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json()
-      })
+    apiFetch<DashboardStats>('/api/supplier/dashboard')
       .then(data => {
         setStats(data)
         setLoading(false)
@@ -29,12 +29,7 @@ function App() {
   }, [])
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px' }}>
-      <header style={{ borderBottom: '2px solid #333', marginBottom: 24 }}>
-        <h1>GKE Shop</h1>
-        <p style={{ color: '#666' }}>Supplier Frontend — react-supplier</p>
-      </header>
-
+    <>
       <h2>Dashboard</h2>
 
       {loading && <p>Loading dashboard...</p>}
@@ -53,12 +48,7 @@ function App() {
         <h2>Recent Orders</h2>
         <OrderList />
       </section>
-
-      <footer style={{ marginTop: 48, paddingTop: 16, borderTop: '1px solid #eee', color: '#999', fontSize: 13 }}>
-        <p>Host: {window.location.hostname}</p>
-        <p>E2E Test — Supplier Frontend → Spring API → Cloud SQL</p>
-      </footer>
-    </div>
+    </>
   )
 }
 
@@ -85,8 +75,7 @@ function OrderList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/supplier/orders')
-      .then(res => res.json())
+    apiFetch<Order[]>('/api/supplier/orders')
       .then(data => {
         setOrders(Array.isArray(data) ? data : [])
         setLoading(false)
@@ -120,7 +109,7 @@ function OrderList() {
                 display: 'inline-block', padding: '2px 8px', borderRadius: 4,
                 fontSize: 12, fontWeight: 'bold',
                 background: o.status === 'completed' ? '#e8f5e9' : o.status === 'pending' ? '#fff3e0' : '#fce4ec',
-                color: o.status === 'completed' ? '#2e7d32' : o.status === 'pending' ? '#e65100' : '#c62828'
+                color: o.status === 'completed' ? '#2e7d32' : o.status === 'pending' ? '#e65100' : '#c62828',
               }}>
                 {o.status}
               </span>
@@ -129,6 +118,59 @@ function OrderList() {
         ))}
       </tbody>
     </table>
+  )
+}
+
+function App() {
+  const auth = useAuth()
+  const [currentView, setCurrentView] = useState<'dashboard' | 'products'>('dashboard')
+
+  if (!auth.token) {
+    return <LoginPage />
+  }
+
+  const navTabStyle = (active: boolean): React.CSSProperties => ({
+    background: 'none',
+    border: 'none',
+    borderRadius: 4,
+    padding: '4px 12px',
+    fontSize: 13,
+    fontWeight: active ? 'bold' : 'normal',
+    color: active ? '#333' : '#666',
+    cursor: 'pointer',
+  })
+
+  return (
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px' }}>
+      <header style={{ borderBottom: '2px solid #333', marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ margin: '0 0 4px' }}>GKE Shop</h1>
+          <p style={{ color: '#666', margin: 0, fontSize: 13 }}>Supplier Frontend — react-supplier</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <button style={navTabStyle(currentView === 'dashboard')} onClick={() => setCurrentView('dashboard')}>
+            Dashboard
+          </button>
+          <button style={navTabStyle(currentView === 'products')} onClick={() => setCurrentView('products')}>
+            Products
+          </button>
+          {auth.username && <span style={{ color: '#666', fontSize: 13, marginLeft: 8 }}>{auth.username}</span>}
+          <button
+            onClick={auth.logout}
+            style={{ background: 'none', border: '1px solid #ddd', borderRadius: 4, padding: '4px 12px', fontSize: 12, color: '#666', cursor: 'pointer' }}
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+
+      {currentView === 'dashboard' ? <Dashboard /> : <ProductList />}
+
+      <footer style={{ marginTop: 48, paddingTop: 16, borderTop: '1px solid #eee', color: '#999', fontSize: 13 }}>
+        <p>Host: {window.location.hostname}</p>
+        <p>E2E Test — Supplier Frontend → Spring API → Cloud SQL</p>
+      </footer>
+    </div>
   )
 }
 
