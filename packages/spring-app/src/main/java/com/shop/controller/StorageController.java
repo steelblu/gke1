@@ -7,6 +7,7 @@ import com.shop.model.Product;
 import com.shop.repository.ProductRepository;
 import com.shop.storage.BucketType;
 import com.shop.storage.StorageService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ public class StorageController {
     }
 
     @PostMapping("/products/{productId}/upload-url")
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ResponseEntity<?> getProductUploadUrl(
             @PathVariable UUID productId,
             @RequestBody Map<String, String> body) {
