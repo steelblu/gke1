@@ -1,3 +1,4 @@
+```mermaid
 graph TB
     %% 글로벌 가용성 및 클라이언트 계층
     subgraph Client_Layer ["👥 사용자 / 클라이언트 계층"]
@@ -68,3 +69,5 @@ graph TB
     style MS_AI fill:#f0fdfa,stroke:#0f766e,stroke-width:1px
     style Redis fill:#fff5f5,stroke:#c53030,stroke-width:2px
     style Postgres fill:#f8fafc,stroke:#2b6cb0,stroke-width:2px
+```
+
