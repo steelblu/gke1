@@ -134,7 +134,7 @@ function App() {
               }}>
                 {p.thumbnailUrl ? (
                   <img
-                    src={`/api/storage/products/${p.id}/image`}
+                    src={`https://storage.googleapis.com/shopping-mall-public/${p.thumbnailUrl}`}
                     alt={p.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => {
