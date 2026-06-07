@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from './context/AuthContext'
+import { useCart } from './context/CartContext'
 import LoginPage from './components/LoginPage'
+import CartModal from './components/CartModal'
+import OrdersModal from './components/OrdersModal'
 
 interface Product {
   id: string
@@ -19,6 +22,7 @@ interface UploadState {
 
 function App() {
   const auth = useAuth()
+  const cart = useCart()
 
   if (!auth.token) {
     return <LoginPage variant="page" />
@@ -53,6 +57,12 @@ function App() {
   }
 
   useEffect(() => { fetchProducts() }, [auth.token])
+
+  useEffect(() => {
+    if (auth.token) {
+      cart.fetchCart()
+    }
+  }, [auth.token])
 
   const triggerUpload = (productId: string) => {
     pendingProductRef.current = productId
@@ -102,6 +112,11 @@ function App() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  const handleAddToCart = async (productId: string) => {
+    await cart.addToCart(productId)
+    cart.openCart()
+  }
+
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px' }}>
       <header style={{ borderBottom: '2px solid #333', marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -110,6 +125,18 @@ function App() {
           <p style={{ color: '#666', margin: 0, fontSize: 13 }}>Buyer Frontend — react-buyer</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={() => { cart.fetchOrders(); cart.openOrders() }}
+            style={{ background: 'none', border: '1px solid #ddd', borderRadius: 4, padding: '4px 12px', fontSize: 12, color: '#666', cursor: 'pointer' }}
+          >
+            My Orders
+          </button>
+          <button
+            onClick={() => cart.openCart()}
+            style={{ background: 'none', border: '1px solid #ddd', borderRadius: 4, padding: '4px 12px', fontSize: 12, color: '#666', cursor: 'pointer', position: 'relative' }}
+          >
+            Cart {cart.cartCount > 0 && `(${cart.cartCount})`}
+          </button>
           <span style={{ color: '#666', fontSize: 13 }}>{auth.username}</span>
           <button
             onClick={auth.logout}
@@ -178,18 +205,30 @@ function App() {
               <p style={{ fontSize: 20, fontWeight: 'bold', margin: '0 0 12px', color: '#e53935' }}>
                 {p.price.toLocaleString()}원
               </p>
-              <button
-                onClick={() => triggerUpload(p.id)}
-                disabled={isUploading}
-                style={{
-                  width: '100%', padding: '8px 0', border: '1px solid #1976d2',
-                  borderRadius: 4, background: isUploading ? '#e3f2fd' : '#fff',
-                  color: '#1976d2', cursor: isUploading ? 'not-allowed' : 'pointer',
-                  fontSize: 14,
-                }}
-              >
-                {isUploading ? 'Uploading...' : p.thumbnailUrl ? 'Change Image' : 'Upload Image'}
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => handleAddToCart(p.id)}
+                  style={{
+                    flex: 1, padding: '8px 0', border: '1px solid #e53935',
+                    borderRadius: 4, background: '#e53935', color: '#fff',
+                    cursor: 'pointer', fontSize: 14,
+                  }}
+                >
+                  Add to Cart
+                </button>
+                <button
+                  onClick={() => triggerUpload(p.id)}
+                  disabled={isUploading}
+                  style={{
+                    padding: '8px 12px', border: '1px solid #1976d2',
+                    borderRadius: 4, background: isUploading ? '#e3f2fd' : '#fff',
+                    color: '#1976d2', cursor: isUploading ? 'not-allowed' : 'pointer',
+                    fontSize: 14, whiteSpace: 'nowrap',
+                  }}
+                >
+                  {isUploading ? '...' : p.thumbnailUrl ? 'Edit' : 'Upload'}
+                </button>
+              </div>
             </div>
           )
         })}
@@ -203,6 +242,9 @@ function App() {
         <p>Host: {window.location.hostname}</p>
         <p>E2E Test — Buyer Frontend → Spring API → Cloud SQL</p>
       </footer>
+
+      {cart.showCart && <CartModal />}
+      {cart.showOrders && <OrdersModal />}
     </div>
   )
 }

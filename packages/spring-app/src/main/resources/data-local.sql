@@ -83,6 +83,29 @@ ON CONFLICT (id) DO UPDATE SET
     thumbnail_url = EXCLUDED.thumbnail_url,
     updated_at = NOW();
 
+-- Seed cart items
+INSERT INTO cart_items (id, buyer_id, product_id, product_name, supplier_id, unit_price, thumbnail_url, quantity, created_at) VALUES
+('c1d2e3f4-0001-4000-8000-000000000001', 'f1a2b3c4-0001-4000-8000-000000000001', 'a1b2c3d4-0001-4000-8000-000000000001', 'Wireless Bluetooth Headphones', 'e1f2a3b4-0001-4000-8000-000000000001', 89000, NULL, 2, NOW())
+ON CONFLICT (id) DO UPDATE SET
+    buyer_id = EXCLUDED.buyer_id,
+    product_id = EXCLUDED.product_id,
+    product_name = EXCLUDED.product_name,
+    supplier_id = EXCLUDED.supplier_id,
+    unit_price = EXCLUDED.unit_price,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    quantity = EXCLUDED.quantity;
+
+INSERT INTO cart_items (id, buyer_id, product_id, product_name, supplier_id, unit_price, thumbnail_url, quantity, created_at) VALUES
+('c1d2e3f4-0001-4000-8000-000000000002', 'f1a2b3c4-0001-4000-8000-000000000001', 'a1b2c3d4-0001-4000-8000-000000000004', 'Smartphone Stand', 'e1f2a3b4-0002-4000-8000-000000000001', 18000, NULL, 1, NOW())
+ON CONFLICT (id) DO UPDATE SET
+    buyer_id = EXCLUDED.buyer_id,
+    product_id = EXCLUDED.product_id,
+    product_name = EXCLUDED.product_name,
+    supplier_id = EXCLUDED.supplier_id,
+    unit_price = EXCLUDED.unit_price,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    quantity = EXCLUDED.quantity;
+
 -- Seed users
 INSERT INTO users (id, username, password, role, email, created_at) VALUES
 ('e1f2a3b4-0001-4000-8000-000000000001', 'techsupplier', '$2b$10$F0tjZzYikIMKoH0OFExQE.j/t//aWO8QdC5p.rToJQawPmPcz546q', 'SUPPLIER', 'admin@techsupplier.com', NOW())

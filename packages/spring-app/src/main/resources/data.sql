@@ -27,6 +27,13 @@ MERGE INTO orders (id, buyer_id, product_id, product_name, supplier_id, quantity
 MERGE INTO orders (id, buyer_id, product_id, product_name, supplier_id, quantity, unit_price, total_amount, status, created_at) KEY(id) VALUES
 ('b1c2d3e4-0001-4000-8000-000000000003', 'f1a2b3c4-0002-4000-8000-000000000001', 'a1b2c3d4-0001-4000-8000-000000000005', 'Portable SSD 1TB', 'e1f2a3b4-0001-4000-8000-000000000001', 1, 159000, 159000, 'pending', NOW());
 
+-- Seed cart items
+MERGE INTO cart_items (id, buyer_id, product_id, product_name, supplier_id, unit_price, thumbnail_url, quantity, created_at) KEY(id) VALUES
+('c1d2e3f4-0001-4000-8000-000000000001', 'f1a2b3c4-0001-4000-8000-000000000001', 'a1b2c3d4-0001-4000-8000-000000000001', 'Wireless Bluetooth Headphones', 'e1f2a3b4-0001-4000-8000-000000000001', 89000, NULL, 2, NOW());
+
+MERGE INTO cart_items (id, buyer_id, product_id, product_name, supplier_id, unit_price, thumbnail_url, quantity, created_at) KEY(id) VALUES
+('c1d2e3f4-0001-4000-8000-000000000002', 'f1a2b3c4-0001-4000-8000-000000000001', 'a1b2c3d4-0001-4000-8000-000000000004', 'Smartphone Stand', 'e1f2a3b4-0002-4000-8000-000000000001', 18000, NULL, 1, NOW());
+
 -- Seed users (for JWT auth E2E tests)
 MERGE INTO users (id, username, password, role, email, created_at) KEY(id) VALUES
 ('e1f2a3b4-0001-4000-8000-000000000001', 'techsupplier', '$2b$10$F0tjZzYikIMKoH0OFExQE.j/t//aWO8QdC5p.rToJQawPmPcz546q', 'SUPPLIER', 'admin@techsupplier.com', NOW());

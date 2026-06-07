@@ -17,6 +17,16 @@ export interface Order {
   createdAt: string;
 }
 
+export interface CartItem {
+  id: string;
+  productId: string;
+  productName: string;
+  unitPrice: number;
+  thumbnailUrl: string | null;
+  quantity: number;
+  createdAt: string;
+}
+
 export interface DashboardStats {
   totalProducts: number;
   totalOrders: number;
